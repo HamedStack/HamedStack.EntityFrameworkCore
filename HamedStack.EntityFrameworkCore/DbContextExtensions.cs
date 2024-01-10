@@ -39,4 +39,31 @@ public static class DbContextExtensions
 
         return tableInfo;
     }
+
+    /// <summary> 
+    /// Adds or updates an entity in the specified <see cref="DbContext"/> based on a condition. 
+    /// If the provided entity is not null, the method sets the entity state to <see cref="EntityState.Added"/> 
+    /// if the specified condition is true, indicating that the entity should be added to the context. 
+    /// Otherwise, it sets the entity state to <see cref="EntityState.Modified"/>, indicating that 
+    /// the existing entity should be updated. 
+    /// </summary> 
+    /// <typeparam name="TEntity">The type of entity to be added or updated.</typeparam> 
+    /// <param name="context">The <see cref="DbContext"/> instance to which this method is applied.</param> 
+    /// <param name="entity">The entity to be added or updated.</param> 
+    /// <param name="addCondition">A delegate that represents the condition for determining whether to add or update the entity.</param> 
+    /// <remarks> 
+    /// The common use case for the <paramref name="addCondition"/> is to check whether the entity's primary key, 
+    /// often represented by the property <c>Id</c>, is equal to zero. For example: 
+    /// <code> 
+    /// dbContext.AddOrUpdate(someEntity, e => e.Id == 0); // Add if Id is 0, otherwise update 
+    /// </code> 
+    /// </remarks> 
+    /// <seealso cref="DbContext"/> 
+    /// <seealso cref="EntityState"/> 
+    /// <seealso cref="Func{T, TResult}"/> 
+    public static void AddOrUpdate<TEntity>(this DbContext context, TEntity entity, Func<TEntity, bool> addCondition)
+    {
+        if (entity != null)
+            context.Entry(entity).State = addCondition(entity) ? EntityState.Added : EntityState.Modified;
+    }
 }
